@@ -121,6 +121,10 @@ punctuator:
 
 key_binder:
   import_preset: default
+  # bindings:
+  #   - { when: has_menu, accept: z, send: 3 } # 候选3 用z号
+  #   - { when: has_menu, accept: 8, send: 4 } # 候选4 用8号
+  #   - { when: has_menu, accept: 9, send: 5 } # 候选5 用9号
 
 
 recognizer:
