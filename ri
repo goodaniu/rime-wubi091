@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+# set -e
+
+# 进入Rime工作目录
+cd ~/.local/share/fcitx5/rime
+
+dictmain=dianer.dict.yaml
+dictspz=dianer_spz.dict.yaml
+dictpri=dianer_user.dict.yaml
+
+function chaxun(){
+	# 以编码查询
+	cd ~/.local/share/fcitx5/rime
+	if echo $1 |grep -q ",";then
+		local str1=`echo $1|cut -d "," -f1`
+		echo -e "\n\e[33m列出形如\e[0m$str1\e[33m的单字编码：\n————————————————————————————————————\e[0m"
+        grep -Pn "^.\t$str1\b" $dictmain $dictspz |sed -r "s/aniu_|.dict.yaml//g"
+		echo -e "\e[33m————————————————————————————————————\e[0m"
+		return
+	elif echo $1 |grep -q "[a-z]"; then
+		echo -e "\n\e[33m列出形如\e[0m$1\e[33m的编码：\n————————————————————————————————————\e[0m"
+		grep -Pn "\t$1\t" $dictmain $dictpri|sed -r "s/aniu_|.dict.yaml//g"
+		echo -e "\e[33m————————————————————————————————————\e[0m"
+		return
+	fi
+	# 以汉字查询编码
+	echo -e "\n\e[33m查询\e[0m$1\e[33m的编码：\n————————————————————————————————————\e[0m"
+	grep -Pn  "^$1\t" $dictmain $dictspz $dictpri|sed -r "s/aniu_|.dict.yaml//g"
+
+	echo -e "\e[33m————————————————————————————————————\e[0m"
+#     python -c "print('\033[1;34m=\033[0m'*10)" # 重复打印“=”
+}
+
+
+case "$1" in
+    -d)
+        echo -e "\e[91m" 
+        line=$(awk -v str1=$2 -F "\t" '$2==str1{print NR ":" $0 }' $dictmain|fzf -m --prompt="Delete:" | tee /dev/tty | awk -F: '{print $1 "d;"}')
+        echo -e "\e[0m"
+        [[ -z $line ]] && exit 130
+        sed -i "$line" $dictmain
+        echo "已删除上述编码。"
+    ;;
+	-c)
+        line=$(awk -v str1=$2 -F "\t" '$2==str1{print $0}' $dictmain|fzf --no-multi-line --prompt="Change:")
+        [[ -z $line ]] && exit 130
+        echo -e "\e[34m$line\e[0m"
+        echo "请输入新的编码或权重："
+        read -r input1
+        if grep -q '^[[:digit:]]*$' <<< $input1  ; then
+            str1=$(echo "$line" |awk -v str0=$input1 'BEGIN {OFS="\t"}{$3=str0; print}')
+            sed -i "/^$line/c $str1" $dictmain
+			echo -e "已将编码权重更改：\e[34m$str1\e[0m"
+        else
+            str1=$(echo $input1|sed -r "s/ +/\t/g;s/---/ /g")
+            sed -i "/^$line/c $str1" $dictmain
+            echo -e "已将编码替换为：\e[34m$str1\e[0m" 
+        fi
+        ;;
+	-a)
+        line=$(awk -v str1=$2 -F "\t" '$2==str1{print NR ":\t" $0}' $dictmain|fzf --no-multi-line --prompt="Append:")
+        num1=$?
+        case "$num1" in
+            0) 
+                line=$(echo $line | awk -F: '{print $1}') ;;
+            1)
+                line=$(awk -v str1=$2 -F "\t" '$2>str1{print NR ":\t" $0;exit}' $dictmain | fzf --no-multi-line --prompt="Append:"|awk -F: '{print $1}'|awk -F: '{print $1}')
+                [[ -z $line ]] && exit;;
+            *)
+                exit $num1;;
+        esac
+        echo "请输入要插入的编码："
+        read -r input1
+        input2=$(echo $input1 |sed -r "s/ +/\t/g;s/---/ /g")
+
+        sed -i "$line a $input2" $dictmain
+        echo -e "已插入新的的编码：\e[34m$input2\e[0m" 
+		;;
+    -s)
+        line=$(awk -v str1=$2 -F "\t" '$2==str1{print NR ":" $0 ";"}' $dictmain|fzf -m --prompt="Swap:")
+        [[ -z $line ]] && exit 130
+        
+        num1=$(echo $line|awk -F ":" '{print $1}')
+        num2=$(echo $line|awk -F ";" '{print $2}' |awk -F ":" '{print $1}')
+        str1=$(echo $line|awk -F ";" '{print $1}' |awk -F ":" '{print $2}')
+        str2=$(echo $line|awk -F ";" '{print $2}' |awk -F ":" '{print $2}')
+        num3=$(echo $str1|awk '{print $3}')
+        num4=$(echo $str2|awk '{print $3}')
+        str1=$(echo $str1|awk -v num0=$num4 'BEGIN {OFS="\t"} {$3=num0;print}')
+        str2=$(echo $str2|awk -v num0=$num3 'BEGIN {OFS="\t"} {$3=num0;print}')
+        
+        sed -i -e "$num1 c $str2" -e "$num2 c $str1" $dictmain
+        [[ $? == 0 ]] && echo -e "互换完毕：\n\e[91m$str2\n$str1\e[0m"
+        ;;
+    -p)
+        echo -e "$2\t$3\t$4" >> $dictpri
+	    echo -e "已向pri词库追加新的编码：\e[34m$2\t$3\t$4\t㊙\e[0m";;
+    -v)
+        fiel1=($(fd -t f --maxdepth 1 yaml|fzf -m -1 -q " $2"))
+        [[ -n "$fiel1" ]] && nvim "${fiel1[@]}"
+      ;;
+    --sort)
+        num0=$(awk '$1=="..." && NF==1{print NR;exit}' $dictmain)
+        tmpfile=$(mktemp)
+        sed -n "$((num0 + 1)),$ p" $dictmain | sort -t "	" -k 2,2 -k 3,3nr | uniq  > $tmpfile
+        sed -i "$((num0 + 1)),$ d;$num0 r $tmpfile" $dictmain
+        ;;
+    --input)
+        if grep -Pq "^...$"; then
+            num0=$(awk '$1=="..." && NF==1{print NR;exit}' $dictmain)
+            awk -v var=$num0 'NR>var && NF>2{gsub(/ +/,"\t");print}' $2 >> $dictmain
+        else
+            awk 'NF>2{gsub(/ +/,"\t");print}' $2 >> $dictmain
+        fi
+      ;;
+    *)
+		chaxun $@
+		;;
+esac
+
