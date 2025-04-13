@@ -1,1 +1,29 @@
-../../../../doc/mydot/.local/share/fcitx5/rime/aniu_user.dict.yaml
+---
+name: dianer_user
+version: "2025-02-08"
+init_time: "2025-02-08"
+dict_grouped: true # 词库管理应用识别：标记该码表为分组模式
+
+# 这里收录个人使用的词条
+
+sort: by_weight
+  # 码表的排序方式
+  # by_weight 权重
+  # original 原始顺序
+
+#use_preset_vocabulary: true # 是否引入【八股文】的词频词序
+
+columns:    # 码表格式
+  - text    # 文字
+  - code    # 输入码
+  - weight  # 权重
+  - comment    # 注释
+
+# 格式：字词 键码  权重 （中间是tab，不是空格）
+# '#'开头的只是注释， 注释只能另起一行写，不能在词条后面写
+# `##` 两个 # 开头的会被识别为分组名，其后跟的词条就是该组的内容
+# 下面是三个小数点，不可以省略
+
+...
+
+
