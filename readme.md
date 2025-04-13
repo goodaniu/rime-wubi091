@@ -15,7 +15,8 @@
 6. `Ctrl+8`切换中英文标点，`Ctrl+9`切换生僻字。
 7. 候选字数量可在`dianer.schema.yaml`中修改。
 8. 时间插件命令：`now` `date` `week` `mont` `year` `dwt` `time` 
-9. 如果需要编码逐渐提示，在`dianer.schema.yaml`中修改`enable_completion`的值为`true`
+9. 如果需要编码逐渐提示，在`dianer.schema.yaml`中修改`enable_completion`的值为`true`。
+10. 如果需要以`z`、`8`和`9`来选择第3、4、5候选项，可以在`dianer.schema.yaml`取消相应注释。
 
 更多设置请查看配置文件。
 
@@ -46,7 +47,11 @@
 # ri脚本
 这是一个bash脚本，用来查询、修改、增删、导入词条的小工具，需要安装fzf，`-v`选项使用了`nvim`。
 
-语法：
+对应的输入法是fcitx5，工作目录是`~/.local/share/fcitx5/rime/`如果是别的输入法，那就需要修改脚本中的相应路径了（第4行）。
+
+**修改字典文件和配置文件后，要重新部署才能生效。**
+
+## 语法：
 
 - `ri [-h|--help]`  显示本帮助
 - `ri code`         查询形如`code`的编码，支持以`.`替代字母，如`ri ad.`，`ri ad..`，`ri .d.`等，不包括生僻字
@@ -68,8 +73,6 @@
 除了查询和`-p`处理`dianer_user.dict.yaml`外，其它参数处理的主字典文件是`dianer.dict.yaml`。
 
 
-
-使用方法，下次再说吧。
 
 # 简体拼音
  `pinyin_simp`方案，词库文件主要来自**白霜拼音**（[rime-frost](https://github.com/gaboolic/rime-frost)）
