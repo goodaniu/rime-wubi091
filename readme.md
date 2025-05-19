@@ -14,7 +14,7 @@
 5. `Tab`和`]`向后翻页，`Shift+Tab`和`[`向前翻页。
 6. `Ctrl+8`切换中英文标点，`Ctrl+9`切换生僻字。
 7. 候选字数量可在`dianer.schema.yaml`中修改。
-8. 时间插件命令：`now` `date` `week` `mont` `year` `dwt` `time` 
+8. 时间插件命令：`now` `date` `week` `mont` `dwt` `time` 
 9. 如果需要编码逐渐提示，在`dianer.schema.yaml`中修改`enable_completion`的值为`true`。
 10. 如果需要以`z`、`8`和`9`来选择第3、4、5候选项，可以在`dianer.schema.yaml`取消相应注释。
 
